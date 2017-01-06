@@ -10,27 +10,28 @@ class Database {
     mongoose.Promise = global.Promise;
 
     const db = mongoose.connection;
-    db.once('open', () => {
-      logger('info', 'connection to MongoDB established', {
-        $module: 'database'
-      });
-
-      deferred.resolve();
-    });
-
-    db.on('error', (error) => {
-      logger('error', 'database connection error', {
-        $module: 'database',
-        $error: error
-      });
-
-      deferred.reject();
-    });
-
+    attachConnectionHandlers(db, deferred);
     mongoose.connect(_config.database.uri, _config.database.options);
 
     return deferred.promise;
   }
+}
+
+function attachConnectionHandlers(db, deferred) {
+  db.once('open', () => {
+    logger.info('connection to MongoDB established', { $module: 'database' });
+
+    deferred.resolve();
+  });
+
+  db.on('error', (error) => {
+    logger.error('database connection error', {
+      $module: 'database',
+      $error: error
+    });
+
+    deferred.reject();
+  });
 }
 
 module.exports = new Database();

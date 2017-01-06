@@ -11,6 +11,15 @@ if(!fs.existsSync(_config.paths.logs)) {
   fs.mkdirSync(_config.paths.logs);
 }
 
+const loggerInterface = {
+  debug: (message, meta) => logAction('debug', message, meta),
+  error: (message, meta) => logAction('error', message, meta),
+  info: (message, meta) => logAction('info', message, meta),
+  silly: (message, meta) => logAction('silly', message, meta),
+  verbose: (message, meta) => logAction('verbose', message, meta),
+  warn: (message, meta) => logAction('warn', message, meta)
+};
+
 const fileTransport = new winston.transports.DailyRotateFile({
   filename: `${_config.paths.logs}/.log`,
   datePattern: 'dd-MM-yyyy',
@@ -49,17 +58,7 @@ if(_config.env === 'development') {
 
 const logger = new winston.Logger({ transports: transports });
 
-function loggerInterface(level, message, meta = {}) {
-  const loglevels = ['silly', 'debug', 'verbose', 'info', 'warn', 'error'];
-
-  if(!_.includes(loglevels, level)) {
-    return new Error('invalid loglevel');
-  }
-
-  if(message && typeof message !== 'string') {
-    return new Error('invalid message data type');
-  }
-
+function logAction(level, message, meta = {}) {
   if(meta.$error) {
     meta.$error = serializeError(meta.$error);
   }
