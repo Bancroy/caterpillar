@@ -13,7 +13,7 @@ const fileTransport = new winston.transports.DailyRotateFile({
   filename: `${_config.paths.logs}/.log`,
   datePattern: 'dd-MM-yyyy',
   prepend: true,
-  level: _config.env === 'development' ? 'debug' : 'warn',
+  level: _config.env === 'development' ? 'debug' : 'info',
   timestamp: () => {
     return moment.utc().utcOffset(_config.server.utcOffset).format();
   }

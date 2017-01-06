@@ -22,13 +22,17 @@ app.use(
   helmet.referrerPolicy({ policy: 'no-referrer' }),
   helmet.xssFilter()
 );
+logger.info('security enabled');
 
 app.use(
   cors(),
   compression(),
   bodyParser.json()
 );
+logger.info('middleware applied');
 
+logger.info(`current api version is ${_config.apiVersion}`);
 routes(app, `/api/${_config.apiVersion}`);
+logger.info('routes attached');
 
 module.exports = app;
