@@ -13,5 +13,12 @@
   "bugs": {
     "url": "https://github.com/Bancroy/caterpillar/issues"
   },
-  "homepage": "https://github.com/Bancroy/caterpillar#readme"
+  "homepage": "https://github.com/Bancroy/caterpillar#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "compression": "^1.6.2",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "helmet": "^3.3.0"
+  }
 }
