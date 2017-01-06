@@ -1,0 +1,17 @@
+{
+  "name": "caterpillar",
+  "version": "0.0.0",
+  "description": "Full-fledged REST API core with Express and Mongo.",
+  "private": true,
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bancroy/caterpillar.git"
+  },
+  "author": "James Pietras <bancroy@gmail.com>",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Bancroy/caterpillar/issues"
+  },
+  "homepage": "https://github.com/Bancroy/caterpillar#readme"
+}
