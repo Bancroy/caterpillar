@@ -5,6 +5,8 @@ const express = require('express');
 const helmet = require('helmet');
 
 global._config = require('./config');
+const logger = require(`${_config.paths.modules}/logger`);
+const routes = require(_config.paths.routes);
 
 const app = express();
 
@@ -27,7 +29,6 @@ app.use(
   bodyParser.json()
 );
 
-const routes = require(_config.paths.routes);
 routes(app, `/api/${_config.apiVersion}`);
 
 module.exports = app;
