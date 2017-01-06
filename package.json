@@ -5,7 +5,12 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "node bin/run.js"
+    "dependency-check": "npm run log-prefix && echo 'Checking dependencies...' && nsp check --output checkstyle || true && echo ''",
+    "git-compress": "echo '' && npm run log-prefix && echo 'Compressing git repository...' && git gc && echo ''",
+    "log-prefix": "echo '\\033[1;97;104m[caterpillar]\\033[0m \\c'",
+    "postinstall": "npm run log-prefix && echo 'Dependencies successfully resolved.\n' && npm run dependency-check || true",
+    "preinstall": "npm run git-compress || true",
+    "start": "nodemon bin/run.js --config nodemon.json || true"
   },
   "repository": {
     "type": "git",
@@ -23,5 +28,12 @@
     "cors": "^2.8.1",
     "express": "^4.14.0",
     "helmet": "^3.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "nsp": "^2.6.2"
+  },
+  "engines": {
+    "node": "7.4.0"
   }
 }
