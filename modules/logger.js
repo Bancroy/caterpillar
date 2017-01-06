@@ -1,7 +1,9 @@
+const _ = require('lodash');
 const chalk = require('chalk');
 const fs = require('fs');
 const moment = require('moment');
 const prettyjson = require('prettyjson');
+const serializeError = require('serialize-error');
 const winston = require('winston');
 require('winston-daily-rotate-file');
 
@@ -40,17 +42,37 @@ const consoleTransport = new winston.transports.Console({
   }
 })
 
-let transports = [];
-
-transports.push(fileTransport);
+let transports = [fileTransport];
 if(_config.env === 'development') {
   transports.push(consoleTransport);
 }
 
 const logger = new winston.Logger({ transports: transports });
 
+function loggerInterface(level, message, meta = {}) {
+  const loglevels = ['silly', 'debug', 'verbose', 'info', 'warn', 'error'];
+
+  if(!_.includes(loglevels, level)) {
+    return new Error('invalid loglevel');
+  }
+
+  if(message && typeof message !== 'string') {
+    return new Error('invalid message data type');
+  }
+
+  if(meta.$error) {
+    meta.$error = serializeError(meta.$error);
+  }
+
+  if(!meta.$module) {
+    meta.$module = 'server';
+  }
+
+  return logger.log(level, message, meta);
+}
+
 function generatePrefix(level, moduleName) {
-  const modulePart = moduleName ? `(${moduleName})` : '(server)';
+  const modulePart = moduleName ? ` -> ${moduleName}` : '';
   let prefix = chalk.bold(`[${level.toUpperCase()}]${modulePart}`);
 
   switch(level) {
@@ -104,4 +126,4 @@ function parseMeta(meta) {
   return metadata;
 }
 
-module.exports = logger;
+module.exports = loggerInterface;
