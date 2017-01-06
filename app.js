@@ -27,4 +27,7 @@ app.use(
   bodyParser.json()
 );
 
+const routes = require(_config.paths.routes);
+routes(app, `/api/${_config.apiVersion}`);
+
 module.exports = app;
