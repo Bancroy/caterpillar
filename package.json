@@ -4,6 +4,9 @@
   "description": "Full-fledged REST API core with Express and Mongo.",
   "private": true,
   "main": "app.js",
+  "scripts": {
+    "start": "node bin/run.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bancroy/caterpillar.git"
