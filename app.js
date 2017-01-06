@@ -5,6 +5,8 @@ const express = require('express');
 const helmet = require('helmet');
 
 global._config = require('./config');
+const logger = require(`${_config.paths.modules}/logger`);
+const routes = require(_config.paths.routes);
 
 const app = express();
 
@@ -20,14 +22,17 @@ app.use(
   helmet.referrerPolicy({ policy: 'no-referrer' }),
   helmet.xssFilter()
 );
+logger('info', 'security enabled');
 
 app.use(
   cors(),
   compression(),
   bodyParser.json()
 );
+logger('info', 'middleware applied');
 
-const routes = require(_config.paths.routes);
+logger('info', `current api version ${_config.apiVersion}`);
 routes(app, `/api/${_config.apiVersion}`);
+logger('info', 'routes attached');
 
 module.exports = app;
