@@ -1,6 +1,17 @@
 const fs = require('fs');
 
-const folderModule = (path) => {
+function defer() {
+  const deferred = {};
+
+  deferred.promise = new Promise((resolve, reject) => {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  return deferred;
+}
+
+function folderModule(path) {
   let moduleConstruct = {};
 
   fs.readdirSync(`${path}/`).forEach((file) => {
@@ -14,5 +25,6 @@ const folderModule = (path) => {
 };
 
 module.exports = {
+  defer: defer,
   folderModule: folderModule
 };
