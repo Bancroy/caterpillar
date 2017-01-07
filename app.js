@@ -38,6 +38,7 @@ routes(app, `/api/${_config.apiVersion}`);
 logger.info('routes attached');
 
 app.use(errorHandlers.transformSyntaxError());
+app.use(errorHandlers.transformStrictModeError());
 app.use(errorHandlers.general());
 logger.info('error handling enabled');
 

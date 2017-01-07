@@ -18,6 +18,18 @@ class ErrorHandlers {
     };
   }
 
+  transformStrictModeError() {
+    return (error, request, response, next) => {
+      if(error.name === 'StrictModeError') {
+        let violations = {};
+        violations[error.path] = 'OUT_OF_SCHEMA';
+        error = new _errors.BadRequest('INVALID_FIELD_NAME', violations);
+      }
+
+      next(error);
+    };
+  }
+
   transformSyntaxError() {
     return (error, request, response, next) => {
       if(error.name === 'SyntaxError') {
