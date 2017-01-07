@@ -85,21 +85,23 @@ function deleteQuery(modelName, single) {
     }
 
     if(single) {
-      query.op = 'findOneAndRemove';
+      query.op = 'findOne';
     }
 
     query.exec().then((response) => {
-      if(query.op === 'find' && response.length === 0) {
+      if(!response || (query.op === 'find' && response.length === 0)) {
         return Promise.reject(new Error('no documents to delete'));
+      }
 
+      if(single) {
+        return response.remove();
+      } else {
         let operations = [];
         for(const result of response) {
-          operations.push(result.remove(action));
+          operations.push(result.remove());
         }
 
         return Promise.all(operations);
-      } else {
-        return Promise.resolve(response);
       }
     }).then((response) => {
       deferred.resolve(response);
@@ -115,7 +117,7 @@ function generateModels(schemas) {
   for(const schema in schemas) {
     const thisSchema = schemas[schema];
     thisSchema.set('strict', 'throw');
-    thisSchema.post('create', logCreate);
+    thisSchema.post('save', logCreate);
     thisSchema.post('remove', logRemove);
     mongoose.model(schema, thisSchema);
   }
@@ -130,11 +132,17 @@ function idQueryLimitError() {
 }
 
 function logCreate(document) {
-  logger.silly('created new document', { $module: 'database' });
+  const metadata = _.extend(document.toObject(), { $module: 'database' });
+  metadata._id = String(metadata._id);
+
+  logger.silly('created new document', metadata);
 }
 
 function logRemove(document) {
-  logger.silly('deleted a document', { $module: 'database' });
+  const metadata = _.extend(document.toObject(), { $module: 'database' });
+  metadata._id = String(metadata._id);
+
+  logger.silly('deleted a document', metadata);
 }
 
 function readQuery(modelName, single) {
