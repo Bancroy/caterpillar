@@ -18,12 +18,20 @@ class ErrorHandlers {
     };
   }
 
+  notFound() {
+    return (request, response, next) => {
+      next(new _errors.NotFound('INVALID_ROUTE'));
+    };
+  }
+
   transformStrictModeError() {
     return (error, request, response, next) => {
       if(error.name === 'StrictModeError') {
         let violations = {};
         violations[error.path] = 'OUT_OF_SCHEMA';
-        error = new _errors.BadRequest('INVALID_FIELD_NAME', violations);
+        error = new _errors.BadRequest(
+          'INVALID_FIELD_NAME', 'database', violations
+        );
       }
 
       next(error);

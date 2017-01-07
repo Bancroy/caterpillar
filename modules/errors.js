@@ -1,11 +1,14 @@
 const logger = require(`${_config.paths.modules}/logger`);
 
 class BadRequestError extends Error {
-  constructor(errorCode, moduleName = 'server') {
+  constructor(errorCode, moduleName = 'server', violations = null) {
     super();
 
     this.name = errorCode;
     this.status = 400;
+    if(violations) {
+      this.violations = violations;
+    }
 
     logger.silly('bad request error', { $error: this, $module: moduleName });
   }
