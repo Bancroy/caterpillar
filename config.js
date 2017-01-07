@@ -16,6 +16,7 @@ const config = {
     logs: `${__dirname}/logs`,
     modules: `${__dirname}/modules`,
     routes: `${__dirname}/routes`,
+    schemas: `${__dirname}/schemas`,
     utils: `${__dirname}/utilities`
   },
   server: {
