@@ -5,6 +5,8 @@ const express = require('express');
 const helmet = require('helmet');
 
 global._config = require('./config');
+global._errors = require(`${_config.paths.modules}/errors`);
+const errorHandlers = require(`${_config.paths.utils}/errorHandlers`);
 const logger = require(`${_config.paths.modules}/logger`);
 const routes = require(_config.paths.routes);
 
@@ -34,5 +36,11 @@ logger.info('middleware applied');
 logger.info(`current api version ${_config.apiVersion}`);
 routes(app, `/api/${_config.apiVersion}`);
 logger.info('routes attached');
+
+app.use(errorHandlers.notFound());
+app.use(errorHandlers.transformSyntaxError());
+app.use(errorHandlers.transformStrictModeError());
+app.use(errorHandlers.general());
+logger.info('error handling enabled');
 
 module.exports = app;
