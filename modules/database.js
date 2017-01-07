@@ -82,7 +82,7 @@ function deleteQuery(modelName, single) {
     const deferred = defer();
 
     if(_.isEmpty(query._conditions)) {
-      return Promise.reject(new _errors.Internal('WIPE_ATTEMPT', 'database'));
+      return deferred.reject(new _errors.Internal('WIPE_ATTEMPT', 'database'));
     }
 
     if(!single && query._conditions._id && !query._conditions._id.$in) {
@@ -96,13 +96,13 @@ function deleteQuery(modelName, single) {
 
     query.exec().then((response) => {
       if(query.op === 'findOne' && !response) {
-        return Promise.reject(
+        return deferred.reject(
           new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
         );
       }
 
       if(query.op === 'find' && response.length === 0) {
-        return Promise.reject(
+        return deferred.reject(
           new _errors.NotFound('NO_DOCUMENTS_SELECTED', 'database')
         );
       }
@@ -138,13 +138,7 @@ function generateModels(schemas) {
 }
 
 function handleDatabaseError(deferred) {
-  return (error) => {
-    if(error.name === 'MongoError' || error.name === 'CastError') {
-      deferred.reject(new _errors.Database(error));
-    } else {
-      deferred.reject(error);
-    }
-  };
+  return (error) => deferred.reject(new _errors.Database(error));
 }
 
 function idQueryLimitError() {
@@ -184,7 +178,7 @@ function readQuery(modelName, single) {
 
     query.exec().then((results) => {
       if(query.op === 'findOne' && !results) {
-        return Promise.reject(
+        return deferred.reject(
           new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
         );
       }
@@ -214,7 +208,7 @@ function updateQuery(modelName, action, options, single) {
     }
 
     if(!action || _.isEmpty(action)) {
-      return Promise.reject(
+      return deferred.reject(
         new _errors.BadRequest('EMPTY_UPDATE_ATTEMPT', 'database')
       );
     }
@@ -228,7 +222,7 @@ function updateQuery(modelName, action, options, single) {
 
     query.exec().then((response) => {
       if(query.op === 'find' && response.length === 0) {
-        return Promise.reject(
+        return deferred.reject(
           new _errors.NotFound('NO_DOCUMENTS_SELECTED', 'database')
         );
 
@@ -239,7 +233,7 @@ function updateQuery(modelName, action, options, single) {
 
         return Promise.all(operations);
       } else if(query.op === 'findOneAndUpdate' && !response) {
-        return Promise.reject(
+        return deferred.reject(
           new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
         );
       } else {
