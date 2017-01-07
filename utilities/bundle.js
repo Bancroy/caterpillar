@@ -24,7 +24,14 @@ function folderModule(path) {
   return moduleConstruct;
 };
 
+function getStackTrace() {
+  let result = {};
+  Error.captureStackTrace(result, getStackTrace);
+  return result.stack;
+}
+
 module.exports = {
   defer: defer,
-  folderModule: folderModule
+  folderModule: folderModule,
+  getStackTrace: getStackTrace
 };

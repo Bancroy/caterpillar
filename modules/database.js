@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const defer = require(`${_config.paths.utils}/bundle`).defer;
 const logger = require(`${_config.paths.modules}/logger`);
 const schemas = require(_config.paths.schemas);
+const getStackTrace = require(`${_config.paths.utils}/bundle`).getStackTrace;
 
 class Database {
   create(modelName, data) {
@@ -80,8 +81,13 @@ function deleteQuery(modelName, single) {
   query.run = function() {
     const deferred = defer();
 
+    if(_.isEmpty(query._conditions)) {
+      return Promise.reject(new _errors.Internal('WIPE_ATTEMPT', 'database'));
+    }
+
     if(!single && query._conditions._id && !query._conditions._id.$in) {
-      return Promise.reject(new Error('use single query for single id'));
+      logger.warn('inefficent query attempt', { trace: getStackTrace() });
+      single = true;
     }
 
     if(single) {
@@ -89,8 +95,16 @@ function deleteQuery(modelName, single) {
     }
 
     query.exec().then((response) => {
-      if(!response || (query.op === 'find' && response.length === 0)) {
-        return Promise.reject(new Error('no documents to delete'));
+      if(query.op === 'findOne' && !response) {
+        return Promise.reject(
+          new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
+        );
+      }
+
+      if(query.op === 'find' && response.length === 0) {
+        return Promise.reject(
+          new _errors.NotFound('NO_DOCUMENTS_SELECTED', 'database')
+        );
       }
 
       if(single) {
@@ -124,7 +138,13 @@ function generateModels(schemas) {
 }
 
 function handleDatabaseError(deferred) {
-  return (error) => deferred.reject(new Error(error));
+  return (error) => {
+    if(error.name === 'MongoError' || error.name === 'CastError') {
+      deferred.reject(new _errors.Database(error));
+    } else {
+      deferred.reject(error);
+    }
+  };
 }
 
 function idQueryLimitError() {
@@ -153,13 +173,20 @@ function readQuery(modelName, single) {
   query.run = function() {
     const deferred = defer();
 
-    if(single || query._conditions.hasOwnProperty('_id')) {
+    if(!single && query._conditions._id && !query._conditions._id.$in) {
+      logger.warn('inefficent query attempt', { trace: getStackTrace() });
+      single = true;
+    }
+
+    if(single) {
       query.op = 'findOne';
     }
 
     query.exec().then((results) => {
       if(query.op === 'findOne' && !results) {
-        return Promise.reject(new Error('document not found'));
+        return Promise.reject(
+          new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
+        );
       }
 
       logger.silly(`read ${chalk.bold.magenta(results.length ? results.length : 1)}`
@@ -182,11 +209,14 @@ function updateQuery(modelName, action, options, single) {
     const deferred = defer();
 
     if(!single && query._conditions._id && !query._conditions._id.$in) {
-      return Promise.reject(new Error('use single query for single id'));
+      logger.warn('inefficent query attempt', { trace: getStackTrace() });
+      single = true;
     }
 
     if(!action || _.isEmpty(action)) {
-      return Promise.reject(new Error('empty action definition'));
+      return Promise.reject(
+        new _errors.BadRequest('EMPTY_UPDATE_ATTEMPT', 'database')
+      );
     }
 
     if(single) {
@@ -198,7 +228,9 @@ function updateQuery(modelName, action, options, single) {
 
     query.exec().then((response) => {
       if(query.op === 'find' && response.length === 0) {
-        return Promise.reject(new Error('no documents to update'));
+        return Promise.reject(
+          new _errors.NotFound('NO_DOCUMENTS_SELECTED', 'database')
+        );
 
         let operations = [];
         for(const result of response) {
@@ -206,6 +238,10 @@ function updateQuery(modelName, action, options, single) {
         }
 
         return Promise.all(operations);
+      } else if(query.op === 'findOneAndUpdate' && !response) {
+        return Promise.reject(
+          new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
+        );
       } else {
         return Promise.resolve(response);
       }

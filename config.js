@@ -1,5 +1,5 @@
 const config = {
-  env: 'development',
+  env: process.env.NODE_ENV || 'development',
   apiVersion: 'v0',
   database: {
     uri: process.env.DATABASE_URI || 'mongodb://localhost/caterpillar',
