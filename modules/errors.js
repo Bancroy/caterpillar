@@ -25,7 +25,6 @@ class DatabaseError extends Error {
       this.status = 500;
     }
 
-
     logger.silly('database error', { $error: this, $module: 'database' });
   }
 }

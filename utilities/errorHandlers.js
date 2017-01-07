@@ -17,6 +17,16 @@ class ErrorHandlers {
       response.status(error.status || 500).json(message);
     };
   }
+
+  transformSyntaxError() {
+    return (error, request, response, next) => {
+      if(error.name === 'SyntaxError') {
+        error = new _errors.BadRequest('INVALID_SYNTAX');
+      }
+
+      next(error);
+    };
+  }
 }
 
 module.exports = new ErrorHandlers();

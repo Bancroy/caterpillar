@@ -37,6 +37,7 @@ logger.info(`current api version ${_config.apiVersion}`);
 routes(app, `/api/${_config.apiVersion}`);
 logger.info('routes attached');
 
+app.use(errorHandlers.transformSyntaxError());
 app.use(errorHandlers.general());
 logger.info('error handling enabled');
 
