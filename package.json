@@ -4,6 +4,14 @@
   "description": "Full-fledged REST API core with Express and Mongo.",
   "private": true,
   "main": "app.js",
+  "scripts": {
+    "dependency-check": "npm run log-prefix && echo 'Checking dependencies...' && nsp check --output checkstyle || true && echo ''",
+    "git-compress": "echo '' && npm run log-prefix && echo 'Compressing git repository...' && git gc && echo ''",
+    "log-prefix": "echo '\\033[1;97;104m[caterpillar]\\033[0m \\c'",
+    "postinstall": "npm run log-prefix && echo 'Dependencies successfully resolved.\n' && npm run dependency-check || true",
+    "preinstall": "npm run git-compress || true",
+    "start": "nodemon bin/run.js --config nodemon.json || true"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bancroy/caterpillar.git"
@@ -13,5 +21,30 @@
   "bugs": {
     "url": "https://github.com/Bancroy/caterpillar/issues"
   },
-  "homepage": "https://github.com/Bancroy/caterpillar#readme"
+  "homepage": "https://github.com/Bancroy/caterpillar#readme",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "chalk": "^1.1.3",
+    "compression": "^1.6.2",
+    "cors": "^2.8.1",
+    "express": "^4.14.0",
+    "file-stream-rotator": "0.0.7",
+    "helmet": "^3.3.0",
+    "lodash": "^4.17.4",
+    "moment": "^2.17.1",
+    "mongoose": "^4.7.6",
+    "morgan": "^1.7.0",
+    "prettyjson": "^1.2.1",
+    "serialize-error": "^2.1.0",
+    "stack-trace": "0.0.9",
+    "winston": "^2.3.0",
+    "winston-daily-rotate-file": "^1.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0",
+    "nsp": "^2.6.2"
+  },
+  "engines": {
+    "node": "7.4.0"
+  }
 }
