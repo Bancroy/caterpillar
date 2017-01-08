@@ -8,9 +8,13 @@ global._config = require('./config');
 global._errors = require(`${_config.paths.modules}/errors`);
 const errorHandlers = require(`${_config.paths.utils}/errorHandlers`);
 const logger = require(`${_config.paths.modules}/logger`);
+const requestLogger = require(`${_config.paths.modules}/requestLogger`);
 const routes = require(_config.paths.routes);
 
 const app = express();
+
+requestLogger(app);
+logger.info('request logging enabled');
 
 app.use(
   helmet.contentSecurityPolicy({ directives: { defaultSrc: ["'self'"] } }),
