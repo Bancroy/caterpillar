@@ -1,46 +1,21 @@
 const express = require('express');
 
-const database = require(`${_config.paths.modules}/database`);
+const countHeader = require(`${_config.paths.middleware}/countHeader`);
+const testsCtrl = require(`${_config.paths.controllers}/tests`);
 
 const router = express.Router();
 
-router.get('/', (request, response, next) => {
-  database.read('Test').run().then((tests) => {
-    response.json({ results: tests });
-  }).catch(error => next(error));
-});
+router.get('/', getTotalCount(), testsCtrl.listEntities);
+router.get('/:id', testsCtrl.getSingleEntity);
+router.post('/', testsCtrl.saveEntity);
+router.delete('/:id', testsCtrl.removeEntity);
+router.patch('/:id', testsCtrl.updateEntity);
+router.put('/:id', testsCtrl.replaceEntity);
 
-router.get('/:id', (request, response, next) => {
-  const id = request.params.id;
-
-  database.readOne('Test').where('_id').equals(id).run().then((test) => {
-    response.json(test);
-  }).catch(error => next(error));
-});
-
-router.post('/', (request, response, next) => {
-  const data = request.body;
-
-  database.create('Test', data).then((test) => {
-    response.json(test);
-  }).catch(error => next(error));
-});
-
-router.delete('/:id', (request, response, next) => {
-  const id = request.params.id;
-
-  database.deleteOne('Test').where('_id').equals(id).run().then((test) => {
-    response.json(test);
-  }).catch(error => next(error));
-});
-
-router.patch('/:id', (request, response, next) => {
-  const id = request.params.id;
-  const changes = request.body;
-
-  database.updateOne('Test', changes).where('_id').equals(id).run().then((test) => {
-    response.json(test);
-  }).catch(error => next(error));
-});
+function getTotalCount() {
+  return countHeader('Test', () => {
+    return Promise.resolve({});
+  });
+}
 
 module.exports = router;
