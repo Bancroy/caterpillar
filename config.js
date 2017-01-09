@@ -13,6 +13,7 @@ const config = {
     }
   },
   paths: {
+    controllers: `${__dirname}/controllers`,
     logs: `${__dirname}/logs`,
     modules: `${__dirname}/modules`,
     routes: `${__dirname}/routes`,
