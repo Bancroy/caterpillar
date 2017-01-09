@@ -1,8 +1,8 @@
-const database = require(`${_config.paths.modules}/database`);
+const Test = _models.Test;
 
 class TestsCtrl {
   listEntities(request, response, next) {
-    database.read('Test').run().then((tests) => {
+    Test.getList().then((tests) => {
       response.json({ results: tests });
     }).catch(error => next(error));
   }
@@ -10,7 +10,7 @@ class TestsCtrl {
   saveEntity(request, response, next) {
     const data = request.body;
 
-    database.create('Test', data).then((test) => {
+    Test.saveEntity(data).then((test) => {
       response.json(test);
     }).catch(error => next(error));
   }
@@ -18,7 +18,7 @@ class TestsCtrl {
   getSingleEntity(request, response, next) {
     const id = request.params.id;
 
-    database.readOne('Test').where('_id').equals(id).run().then((test) => {
+    Test.getById(id).then((test) => {
       response.json(test);
     }).catch(error => next(error));
   }
@@ -26,16 +26,16 @@ class TestsCtrl {
   removeEntity(request, response, next) {
     const id = request.params.id;
 
-    database.deleteOne('Test').where('_id').equals(id).run().then((test) => {
+    Test.removeById(id).then((test) => {
       response.json(test);
     }).catch(error => next(error));
   }
 
   replaceEntity(request, response, next) {
     const id = request.params.id;
-    const newObject = request.body;
+    const newData = request.body;
 
-    database.replace('Test', id, newObject).then((newTest) => {
+    Test.replaceEntity(id, newData).then((newTest) => {
       response.json(newTest);
     }).catch(error => next(error));
   }
@@ -44,7 +44,7 @@ class TestsCtrl {
     const id = request.params.id;
     const changes = request.body;
 
-    database.updateOne('Test', changes).where('_id').equals(id).run().then((test) => {
+    Test.updateById(id, changes).then((test) => {
       response.json(test);
     }).catch(error => next(error));
   }

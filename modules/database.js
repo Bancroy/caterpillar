@@ -4,14 +4,13 @@ const mongoose = require('mongoose');
 
 const defer = require(`${_config.paths.utils}/bundle`).defer;
 const logger = require(`${_config.paths.modules}/logger`);
-const schemas = require(_config.paths.schemas);
 const getStackTrace = require(`${_config.paths.utils}/bundle`).getStackTrace;
 
 class Database {
   create(modelName, data) {
     const deferred = defer();
 
-    const model = mongoose.model(modelName);
+    const model = _models[modelName];
     model(data).save().then((result) => {
       deferred.resolve(result);
     }).catch(handleDatabaseError(deferred));
@@ -34,10 +33,24 @@ class Database {
 
     const db = mongoose.connection;
     attachConnectionHandlers(db, deferred);
-    generateModels(schemas);
     mongoose.connect(_config.database.uri, _config.database.options);
 
     return deferred.promise;
+  }
+
+  getModels() {
+    const schemas = require(_config.paths.schemas);
+
+    let models = {};
+    for(const schema in schemas) {
+      const thisSchema = schemas[schema];
+      thisSchema.set('strict', 'throw');
+      thisSchema.post('save', logCreate);
+      thisSchema.post('remove', logRemove);
+      models[schema] = mongoose.model(schema, thisSchema);
+    }
+
+    return models;
   }
 
   read(modelName) {
@@ -51,7 +64,7 @@ class Database {
   replace(modelName, id, data) {
     const deferred = defer();
 
-    const model = mongoose.model(modelName);
+    const model = _models[modelName];
     model(data).validate().then(() => {
       return model.findOneAndUpdate({ _id: id }, data, {
         overwrite: true,
@@ -97,7 +110,7 @@ function attachConnectionHandlers(db, deferred) {
 }
 
 function deleteQuery(modelName, single) {
-  const model = mongoose.model(modelName);
+  const model = _models[modelName];
   const query = model.find();
 
   query.run = function() {
@@ -149,16 +162,6 @@ function deleteQuery(modelName, single) {
   return _.omit(query, 'exec');
 }
 
-function generateModels(schemas) {
-  for(const schema in schemas) {
-    const thisSchema = schemas[schema];
-    thisSchema.set('strict', 'throw');
-    thisSchema.post('save', logCreate);
-    thisSchema.post('remove', logRemove);
-    mongoose.model(schema, thisSchema);
-  }
-}
-
 function handleDatabaseError(deferred) {
   return (error) => deferred.reject(new _errors.Database(error));
 }
@@ -182,7 +185,7 @@ function logRemove(document) {
 }
 
 function readQuery(modelName, single) {
-  const model = mongoose.model(modelName);
+  const model = _models[modelName];
   const query = model.find();
 
   query.limit(10);
@@ -215,7 +218,7 @@ function readQuery(modelName, single) {
 }
 
 function updateQuery(modelName, action, options, single) {
-  const model = mongoose.model(modelName);
+  const model = _models[modelName];
   const query = model.find();
 
   query.run = function() {

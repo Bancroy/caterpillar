@@ -6,6 +6,7 @@ const helmet = require('helmet');
 
 global._config = require('./config');
 global._errors = require(`${_config.paths.modules}/errors`);
+global._models = require(`${_config.paths.modules}/database`).getModels();
 const errorHandlers = require(`${_config.paths.utils}/errorHandlers`);
 const logger = require(`${_config.paths.modules}/logger`);
 const requestLogger = require(`${_config.paths.modules}/requestLogger`);
