@@ -7,15 +7,12 @@ const logger = require(`${_config.paths.modules}/logger`);
 const getStackTrace = require(`${_config.paths.utils}/bundle`).getStackTrace;
 
 class Database {
+  count(modelName, criteria) {
+    return countQuery(modelName, criteria);
+  }
+
   create(modelName, data) {
-    const deferred = defer();
-
-    const model = _models[modelName];
-    model(data).save().then((result) => {
-      deferred.resolve(result);
-    }).catch(handleDatabaseError(deferred));
-
-    return deferred.promise;
+    return createQuery(modelName, data);
   }
 
   delete(modelName) {
@@ -62,25 +59,7 @@ class Database {
   }
 
   replace(modelName, id, data) {
-    const deferred = defer();
-
-    const model = _models[modelName];
-    model(data).validate().then(() => {
-      return model.findOneAndUpdate({ _id: id }, data, {
-        overwrite: true,
-        new: true
-      });
-    }).then((response) => {
-      if(!response) {
-        return deferred.reject(
-          new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
-        );
-      }
-
-      deferred.resolve(response);
-    }).catch(handleDatabaseError(deferred));
-
-    return deferred.promise;
+    return replaceQuery(modelName, id, data);
   }
 
   update(modelName, action, options = {}) {
@@ -107,6 +86,28 @@ function attachConnectionHandlers(db, deferred) {
 
     deferred.reject();
   });
+}
+
+function createQuery(modelName, data) {
+  const deferred = defer();
+
+  const model = _models[modelName];
+  model(data).save().then((result) => {
+    deferred.resolve(result);
+  }).catch(handleDatabaseError(deferred));
+
+  return deferred.promise;
+}
+
+function countQuery(modelName, criteria) {
+  const deferred = defer();
+
+  const model = _models[modelName];
+  model.count(criteria).then((result) => {
+    deferred.resolve(result);
+  }).catch(handleDatabaseError(deferred));
+
+  return deferred.promise;
 }
 
 function deleteQuery(modelName, single) {
@@ -215,6 +216,28 @@ function readQuery(modelName, single) {
   };
 
   return _.omit(query, 'exec');
+}
+
+function replaceQuery(modelName, id, data) {
+  const deferred = defer();
+
+  const model = _models[modelName];
+  model(data).validate().then(() => {
+    return model.findOneAndUpdate({ _id: id }, data, {
+      overwrite: true,
+      new: true
+    });
+  }).then((response) => {
+    if(!response) {
+      return deferred.reject(
+        new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
+      );
+    }
+
+    deferred.resolve(response);
+  }).catch(handleDatabaseError(deferred));
+
+  return deferred.promise;
 }
 
 function updateQuery(modelName, action, options, single) {
