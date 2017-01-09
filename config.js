@@ -15,6 +15,7 @@ const config = {
   paths: {
     controllers: `${__dirname}/controllers`,
     logs: `${__dirname}/logs`,
+    middleware: `${__dirname}/middleware`,
     modules: `${__dirname}/modules`,
     routes: `${__dirname}/routes`,
     schemas: `${__dirname}/schemas`,
