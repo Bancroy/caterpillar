@@ -48,6 +48,28 @@ class Database {
     return readQuery(modelName, true);
   }
 
+  replace(modelName, id, data) {
+    const deferred = defer();
+
+    const model = mongoose.model(modelName);
+    model(data).validate().then(() => {
+      return model.findOneAndUpdate({ _id: id }, data, {
+        overwrite: true,
+        new: true
+      });
+    }).then((response) => {
+      if(!response) {
+        return deferred.reject(
+          new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
+        );
+      }
+
+      deferred.resolve(response);
+    }).catch(handleDatabaseError(deferred));
+
+    return deferred.promise;
+  }
+
   update(modelName, action, options = {}) {
     return updateQuery(modelName, action, options, false);
   }
@@ -182,9 +204,6 @@ function readQuery(modelName, single) {
           new _errors.NotFound('DOCUMENT_NOT_FOUND', 'database')
         );
       }
-
-      logger.silly(`read ${chalk.bold.magenta(results.length ? results.length : 1)}`
-        + ` of ${chalk.bold.magenta(modelName)}`, { $module: 'database' });
 
       deferred.resolve(results);
     }).catch(handleDatabaseError(deferred));

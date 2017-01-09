@@ -43,4 +43,13 @@ router.patch('/:id', (request, response, next) => {
   }).catch(error => next(error));
 });
 
+router.put('/:id', (request, response, next) => {
+  const id = request.params.id;
+  const newObject = request.body;
+
+  database.replace('Test', id, newObject).then((newTest) => {
+    response.json(newTest);
+  }).catch(error => next(error));
+});
+
 module.exports = router;
